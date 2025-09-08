@@ -214,12 +214,19 @@
   padding: 2rem;
   border-radius: 1.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(.25,.8,.25,1), box-shadow 0.3s cubic-bezier(.25,.8,.25,1);
   text-align: center;
+  cursor: pointer;
+  will-change: transform, box-shadow;
 }
 
-.technique-card:hover {
-  transform: translateY(-8px);
+.technique-card:hover,
+.technique-card:focus-within {
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: 0 8px 32px 0 rgba(5, 150, 105, 0.3),
+              0 1.5px 8px rgba(0, 0, 0, 0.07);
+  background-color: #ffffff;
+  z-index: 2;
 }
 
 .technique-icon {

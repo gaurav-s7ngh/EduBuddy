@@ -30,8 +30,8 @@ const matches = [
 ];
 
 const sessions = [
-  "April Hugaday, 2013, Hil Video",
-  "Apr 26, 2025, 3914/Vd Origuats"
+  "21 Sept : Data Structures And Algorithm",
+  "22 Sept : Dynamic Web Designing"
 ];
 
 const Dashboard = ({ user }) => {

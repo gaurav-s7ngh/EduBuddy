@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import Logo from '../assets/Logo.png';
+import Logo from '/public/Logo.png';
 import { useNavigate } from 'react-router-dom';
 import '../styles/SideBar.css'
 
