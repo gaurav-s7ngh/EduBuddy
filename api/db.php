@@ -12,10 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 // --- CONFIGURATION ---
 // Use environment variables if available, otherwise fallback to local/hardcoded
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_USER', getenv('DB_USER') ?: 'root'); 
-define('DB_PASS', getenv('DB_PASS') ?: '');     
-define('DB_NAME', getenv('DB_NAME') ?: 'edubuddy');
+define('DB_HOST', getenv('DB_HOST') ?: 'sql107.infinityfree.com');
+define('DB_USER', getenv('DB_USER') ?: 'if0_40874091'); 
+define('DB_PASS', getenv('DB_PASS') ?: 'R9mH58SAJWiOL');     
+define('DB_NAME', getenv('DB_NAME') ?: 'if0_40874091_edubuddy');
 
 // --- APP ---
 header('Content-Type: application/json');
