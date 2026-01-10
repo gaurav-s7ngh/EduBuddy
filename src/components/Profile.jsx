@@ -7,6 +7,10 @@ import {
 } from 'react-icons/fa';
 import defaultAvatar from '/avatar.png'; 
 import { getPersonalityKey, TITLE_DEFINITIONS } from '../utils/personalityDefs'; // Import new helpers
+// ... imports
+// Make sure FaCheckCircle is imported
+
+
 
 // --- Pretty Success Popup Component ---
 const SuccessPopup = ({ message, onClose }) => (
@@ -222,18 +226,31 @@ const Profile = () => {
           </div>
 
           {/* Personality Section */}
+          
+          {/* Personality Section */}
           <div className="form-section">
             <div className="section-header">
               <FaBrain /> 
               <h3>Personality Profile</h3>
-              <button type="button" className="quiz-retake-btn" onClick={() => setShowQuiz(true)}>
-                Start Analysis (IPIP-50)
-              </button>
+              
+              {/* --- NEW LOGIC START --- */}
+              {profile.personality_type ? (
+                <button type="button" className="quiz-retake-btn completed" disabled>
+                  <FaCheckCircle /> Analysis Complete
+                </button>
+              ) : (
+                <button type="button" className="quiz-retake-btn" onClick={() => setShowQuiz(true)}>
+                  Start Analysis (IPIP-50)
+                </button>
+              )}
+              {/* --- NEW LOGIC END --- */}
+              
             </div>
             
             <p className="section-subtitle">
               Based on the IPIP-50 Scientific Assessment.
             </p>
+
 
             <div className="traits-display-grid">
               {[

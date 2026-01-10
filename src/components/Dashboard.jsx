@@ -4,28 +4,45 @@ import '../styles/Dashboard.css';
 import { Link } from 'react-router-dom';
 import { FaUserPlus, FaCalendarCheck, FaCheck, FaTimes, FaBrain } from 'react-icons/fa';
 import { TRAIT_DEFINITIONS, TITLE_DEFINITIONS } from '../utils/personalityDefs';
-import { API_BASE_URL, getImagePath } from '../apiConfig'; // <-- Import NEW Config
-import UpcomingSessionCard from './UpcomingSessionCard';   // <-- Import NEW Component
+import { API_BASE_URL, getImagePath } from '../apiConfig'; 
+import UpcomingSessionCard from './UpcomingSessionCard'; 
 
-// Personality Banner
+// --- UPDATED PERSONALITY BANNER ---
 const PersonalityDisplay = ({ profile }) => {
-  if (!profile.personality_title) return null; 
-  const description = TITLE_DEFINITIONS[profile.personality_type] ? TITLE_DEFINITIONS[profile.personality_type][1] : "Your unique personality type.";
-  const decodedTraits = profile.personality_type.split('').map(letter => ({
+  // CRITICAL FIX: Safety check to prevent crashing if data is missing
+  if (!profile || !profile.personality_title || !profile.personality_type) return null; 
+
+  const typeKey = profile.personality_type;
+  
+  // Get definitions safely
+  const title = TITLE_DEFINITIONS[typeKey] ? TITLE_DEFINITIONS[typeKey][0] : profile.personality_title;
+  // Index 2 is the new "Fun Description" we added
+  const description = TITLE_DEFINITIONS[typeKey] ? TITLE_DEFINITIONS[typeKey][2] : "Your unique personality type.";
+
+  // Safe split for traits
+  const decodedTraits = typeKey.split('').map(letter => ({
     letter,
     name: TRAIT_DEFINITIONS[letter] ? TRAIT_DEFINITIONS[letter][0] : 'Unknown'
   }));
+
   return (
     <div className="personality-banner">
       <div className="personality-banner-header">
         <FaBrain className="icon" />
-        <h3>{profile.personality_title}</h3>
-        <span>({profile.personality_type})</span>
+        <div>
+            <h3>{title}</h3>
+            <span className="personality-code">({typeKey})</span>
+        </div>
       </div>
-      <p>{description}</p>
+      
+      {/* Display the new detailed description */}
+      <p className="personality-description">
+        {description}
+      </p>
+
       <ul className="personality-trait-list">
-        {decodedTraits.map(trait => (
-          <li key={trait.letter} className="personality-trait-item">
+        {decodedTraits.map((trait, index) => (
+          <li key={index} className="personality-trait-item">
             <strong>{trait.name}</strong> <span>({trait.letter})</span>
           </li>
         ))}
@@ -33,8 +50,8 @@ const PersonalityDisplay = ({ profile }) => {
     </div>
   );
 };
+// ----------------------------------
 
-// MiniMatchCard
 const MiniMatchCard = ({ match }) => (
   <div className='card mini-match-card'>
     <img src={getImagePath(match.profile_pic_url)} alt={match.full_name} className='match-image-mini' />
@@ -45,7 +62,6 @@ const MiniMatchCard = ({ match }) => (
   </div>
 );
 
-// PendingRequestCard
 const PendingRequestCard = ({ request, onRespond }) => (
   <div className="session-card">
     <img src={getImagePath(request.profile_pic_url)} alt={request.full_name} className='match-image-mini' />
@@ -70,7 +86,6 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      // FIX: Use API_BASE_URL
       const [matchesRes, sessionsRes, profileRes] = await Promise.all([
         fetch(`${API_BASE_URL}/matches.php?limit=5`), 
         fetch(`${API_BASE_URL}/sessions.php`),      
@@ -78,10 +93,13 @@ const Dashboard = () => {
       ]);
       const matchesData = await matchesRes.json();
       if (matchesData.success) setTopMatches(matchesData.data);
+      
       const sessionsData = await sessionsRes.json();
       if (sessionsData.success) setSessionData(sessionsData.data);
+      
       const profileData = await profileRes.json();
       if (profileData.success) setProfile(profileData.data);
+      
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
     } finally {
@@ -121,7 +139,9 @@ const Dashboard = () => {
         <h2>Hey there, {user?.full_name || 'Buddy'}! 👋</h2>
         <Link to="/profile" className='about-btn'>Edit Profile</Link>
       </div>
-      {profile && <PersonalityDisplay profile={profile} />}
+      
+      {/* Updated PersonalityDisplay handles the missing data check internally now */}
+      <PersonalityDisplay profile={profile} />
 
       {sessionData.pending_requests && sessionData.pending_requests.length > 0 && (
         <div className="dashboard-section">

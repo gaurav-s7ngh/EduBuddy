@@ -7,20 +7,22 @@ $user_id = $db->check_login();
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method == 'GET') {
-    try {
-        // Fetch numeric traits along with everything else
-        $stmt = $conn->prepare("
-            SELECT u.full_name, u.email, u.college, p.bio, p.preferred_study_time, p.goal,
-                   p.focus_time, p.session_length, p.profile_pic_url,
-                   p.course, p.year_of_passing,
-                   p.openness, p.conscientiousness, p.extraversion, p.agreeableness, p.neuroticism
-            FROM users u 
-            JOIN profiles p ON u.user_id = p.user_id 
-            WHERE u.user_id = ?
-        ");
-        $stmt->execute([$user_id]);
-        $profile = $stmt->fetch();
-
+    // ... inside the GET block ...
+try {
+    // FIX: Added p.personality_title and p.personality_type to the SELECT list
+    $stmt = $conn->prepare("
+        SELECT u.full_name, u.email, u.college, p.bio, p.preferred_study_time, p.goal,
+               p.focus_time, p.session_length, p.profile_pic_url,
+               p.course, p.year_of_passing,
+               p.openness, p.conscientiousness, p.extraversion, p.agreeableness, p.neuroticism,
+               p.personality_title, p.personality_type
+        FROM users u 
+        JOIN profiles p ON u.user_id = p.user_id 
+        WHERE u.user_id = ?
+    ");
+    $stmt->execute([$user_id]);
+    $profile = $stmt->fetch();
+// ... rest of the file ...
         // (Socials, Subjects, Hobbies logic remains exactly the same...)
         $stmt = $conn->prepare("SELECT platform, url FROM social_links WHERE user_id = ?");
         $stmt->execute([$user_id]);

@@ -168,18 +168,29 @@ const MatchCardPage = () => {
   }, []);
 
   // --- (Filter logic is unchanged, but now works with the API's 'HAVING' clause) ---
+  // ... inside MatchCardPage component ...
+
   const filteredMatches = useMemo(() => {
     return allMatches.filter(match => {
+      // FIX: Split the string into an array for exact matching
       if (filters.subject !== 'all') {
-        if (!match.common_subjects_list || !match.common_subjects_list.includes(filters.subject)) {
+        const subjectsArray = match.common_subjects_list 
+          ? match.common_subjects_list.split(', ') 
+          : [];
+        if (!subjectsArray.includes(filters.subject)) {
           return false;
         }
       }
+      
       if (filters.hobby !== 'all') {
-        if (!match.common_hobbies_list || !match.common_hobbies_list.includes(filters.hobby)) {
+        const hobbiesArray = match.common_hobbies_list 
+          ? match.common_hobbies_list.split(', ') 
+          : [];
+        if (!hobbiesArray.includes(filters.hobby)) {
           return false;
         }
       }
+
       if (filters.personality !== 'all') {
         if (match.personality_title !== filters.personality) {
           return false;
@@ -189,6 +200,7 @@ const MatchCardPage = () => {
     });
   }, [allMatches, filters]);
 
+// ... rest of the file ...
   // (All handlers are unchanged)
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
