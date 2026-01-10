@@ -5,123 +5,79 @@ $db = new Database();
 $conn = $db->getConnection();
 $current_user_id = $db->check_login();
 
-// Check for a limit parameter (e.g., ?limit=5 for dashboard)
 $limit_sql = "";
 if (isset($_GET['limit']) && is_numeric($_GET['limit'])) {
     $limit_sql = "LIMIT " . intval($_GET['limit']);
 }
 
 try {
-    // 1. Get current user's data (college, personality, AND focus_time)
+    // 1. Get current user's scores
     $stmt = $conn->prepare("
-        SELECT u.college, p.personality_type, p.focus_time 
-        FROM users u
-        LEFT JOIN profiles p ON u.user_id = p.user_id
+        SELECT openness, conscientiousness, extraversion, agreeableness, neuroticism, college, focus_time
+        FROM profiles p
+        JOIN users u ON u.user_id = p.user_id
         WHERE u.user_id = ?
     ");
     $stmt->execute([$current_user_id]);
-    $currentUserData = $stmt->fetch();
+    $me = $stmt->fetch();
 
-    // Fallbacks to prevent SQL or NULL errors
-    $user_college = $currentUserData['college'] ?? 'guest_college';
-    $user_personality = $currentUserData['personality_type'] ?? 'XXXX';
-    $user_focus_time = $currentUserData['focus_time'] ?? 'flexible'; 
+    if (!$me) $db->send_response(false, "Profile not found.");
 
-    // 2. Main matching query
+    // 2. Complex Matching Query
     $sql = "
         SELECT
-            u.user_id,
-            u.full_name,
-            u.college,
-            p.bio,
-            p.goal,
-            p.personality_title,
-            p.personality_type,
-            p.focus_time,
-            p.profile_pic_url, -- <-- ADDED THIS
+            u.user_id, u.full_name, u.college,
+            p.bio, p.goal, p.focus_time, p.profile_pic_url,
+            p.openness, p.conscientiousness, p.extraversion, p.agreeableness, p.neuroticism,
 
-            -- Score 1: Common Subjects (5 pts per subject)
+            -- Compatibility Score Calculation (Euclidean Distance based)
+            -- Maximum difference per trait is 100. Max total distance is sqrt(5 * 100^2) approx 223.
+            -- We convert this to a % score. Higher is closer.
+            (100 - (
+                SQRT(
+                    POW(p.openness - ?, 2) +
+                    POW(p.conscientiousness - ?, 2) +
+                    POW(p.extraversion - ?, 2) +
+                    POW(p.agreeableness - ?, 2) +
+                    POW(p.neuroticism - ?, 2)
+                ) / 2.23
+            )) AS personality_match_score,
+
+            -- Common Subjects (Keeping your logic)
             (SELECT COUNT(DISTINCT us.subject_id) * 5
              FROM user_subjects us
              WHERE us.user_id = u.user_id AND us.subject_id IN (
                 SELECT subject_id FROM user_subjects WHERE user_id = ?
              )) AS common_subjects_score,
 
-            -- Score 2: Common Hobbies (2 pts per hobby)
-            (SELECT COUNT(DISTINCT uh.hobby_id) * 2
-             FROM user_hobbies uh
-             WHERE uh.user_id = u.user_id AND uh.hobby_id IN (
-                SELECT hobby_id FROM user_hobbies WHERE user_id = ?
-             )) AS common_hobbies_score,
-
-            -- Score 3: College Boost (10 pts)
-            IF(u.college = ?, 10, 0) AS college_boost,
-
-            -- Score 4: Advanced Personality Score (5 pts per matching trait)
-            (
-                IF(SUBSTRING(p.personality_type, 1, 1) = SUBSTRING(?, 1, 1), 5, 0) +
-                IF(SUBSTRING(p.personality_type, 2, 1) = SUBSTRING(?, 2, 1), 5, 0) +
-                IF(SUBSTRING(p.personality_type, 3, 1) = SUBSTRING(?, 3, 1), 5, 0) +
-                IF(SUBSTRING(p.personality_type, 4, 1) = SUBSTRING(?, 4, 1), 5, 0)
-            ) AS personality_score,
-            
-            -- Score 5: Study Preference Score (15 pts)
-            IF(p.focus_time = ? AND p.focus_time != 'flexible', 15, 0) AS study_preference_score,
-
-            -- Common subjects list
-            (SELECT GROUP_CONCAT(s.subject_name SEPARATOR ', ')
-             FROM user_subjects us_all
-             JOIN subjects s ON us_all.subject_id = s.subject_id
-             WHERE us_all.user_id = u.user_id AND us_all.subject_id IN (
-                SELECT subject_id FROM user_subjects WHERE user_id = ?
-             )) AS common_subjects_list,
-
-            -- Common hobbies list
-            (SELECT GROUP_CONCAT(h.hobby_name SEPARATOR ', ')
-             FROM user_hobbies uh_all
-             JOIN hobbies h ON uh_all.hobby_id = h.hobby_id
-             WHERE uh_all.user_id = u.user_id AND uh_all.hobby_id IN (
-                SELECT hobby_id FROM user_hobbies WHERE user_id = ?
-             )) AS common_hobbies_list
+            -- College Boost
+            IF(u.college = ?, 10, 0) AS college_boost
 
         FROM users u
         LEFT JOIN profiles p ON u.user_id = p.user_id
-
         WHERE u.user_id != ?
-
-        GROUP BY
-            u.user_id, u.full_name, u.college, p.bio, p.goal, p.personality_title, p.personality_type, p.focus_time, p.profile_pic_url -- <-- ADDED THIS
-
-        -- This is the filter you wanted. It only shows users with a score > 0
-        HAVING 
-            (common_subjects_score + common_hobbies_score + college_boost + personality_score + study_preference_score) > 0
-            
-        ORDER BY
-            -- Rank by the new TOTAL score
-            (common_subjects_score + common_hobbies_score + college_boost + personality_score + study_preference_score) DESC
-
+        AND u.user_id NOT IN (
+            SELECT user_two_id FROM matches WHERE user_one_id = ?
+            UNION
+            SELECT user_one_id FROM matches WHERE user_two_id = ?
+        )
+        
+        -- Prioritize high compatibility
+        ORDER BY (personality_match_score + common_subjects_score + college_boost) DESC
         $limit_sql;
     ";
 
     $stmt = $conn->prepare($sql);
-
-    // Parameters must match order of ? placeholders
     $stmt->execute([
-        $current_user_id,   // for common_subjects_score
-        $current_user_id,   // for common_hobbies_score
-        $user_college,      // for college_boost
-        $user_personality,  // personality letter 1
-        $user_personality,  // personality letter 2
-        $user_personality,  // personality letter 3
-        $user_personality,  // personality letter 4
-        $user_focus_time,   // for study_preference_score
-        $current_user_id,   // for common_subjects_list
-        $current_user_id,   // for common_hobbies_list
-        $current_user_id    // for "WHERE u.user_id != ?"
+        $me['openness'], $me['conscientiousness'], $me['extraversion'], $me['agreeableness'], $me['neuroticism'],
+        $current_user_id, // common subjects
+        $me['college'],   // college boost
+        $current_user_id, // exclude self
+        $current_user_id, // exclude matches
+        $current_user_id
     ]);
 
     $matches = $stmt->fetchAll();
-    
     $db->send_response(true, 'Matches found', $matches);
 
 } catch (PDOException $e) {

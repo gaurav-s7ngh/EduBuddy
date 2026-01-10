@@ -10,16 +10,16 @@ if (!isset($data->buddy_user_id) || !isset($data->meet_link)) {
     $db->send_response(false, 'Invalid request. Missing data.');
 }
 
-// Basic validation for the Google Meet link
-if (strpos($data->meet_link, 'meet.google.com/') === false) {
-    $db->send_response(false, 'This does not look like a valid Google Meet link.');
+// FIX: Regex validation to ensure it's a real Meet link
+// Matches formats like: https://meet.google.com/abc-defg-hij
+if (!preg_match('/^https:\/\/meet\.google\.com\/[a-z]{3}-[a-z]{4}-[a-z]{3}$/', $data->meet_link)) {
+    $db->send_response(false, 'Invalid Google Meet link format. (Example: https://meet.google.com/abc-defg-hij)');
 }
 
 $target_user_id = $data->buddy_user_id;
 $meet_link = $data->meet_link;
 
 try {
-    // Find the accepted match row and update the link
     $stmt = $conn->prepare("
         UPDATE matches
         SET google_meet_link = ?

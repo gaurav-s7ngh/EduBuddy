@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Dashboard.css';
-import defaultAvatar from '/avatar.png'; 
 import { Link } from 'react-router-dom';
-import { FaUserPlus, FaCalendarCheck, FaCheck, FaTimes, FaBrain, FaLink, FaSave } from 'react-icons/fa';
+import { FaUserPlus, FaCalendarCheck, FaCheck, FaTimes, FaBrain } from 'react-icons/fa';
 import { TRAIT_DEFINITIONS, TITLE_DEFINITIONS } from '../utils/personalityDefs';
+import { API_BASE_URL, getImagePath } from '../apiConfig'; // <-- Import NEW Config
+import UpcomingSessionCard from './UpcomingSessionCard';   // <-- Import NEW Component
 
-// Helper function to get the correct image path
-const getImagePath = (url) => {
-  if (url) return `/api/${url}`;
-  return defaultAvatar;
-};
-
-// Personality Banner (Unchanged)
+// Personality Banner
 const PersonalityDisplay = ({ profile }) => {
-  // ... (This component is fine, no changes needed)
   if (!profile.personality_title) return null; 
   const description = TITLE_DEFINITIONS[profile.personality_type] ? TITLE_DEFINITIONS[profile.personality_type][1] : "Your unique personality type.";
   const decodedTraits = profile.personality_type.split('').map(letter => ({
@@ -40,7 +34,7 @@ const PersonalityDisplay = ({ profile }) => {
   );
 };
 
-// MiniMatchCard (Unchanged)
+// MiniMatchCard
 const MiniMatchCard = ({ match }) => (
   <div className='card mini-match-card'>
     <img src={getImagePath(match.profile_pic_url)} alt={match.full_name} className='match-image-mini' />
@@ -51,7 +45,7 @@ const MiniMatchCard = ({ match }) => (
   </div>
 );
 
-// PendingRequestCard (Unchanged)
+// PendingRequestCard
 const PendingRequestCard = ({ request, onRespond }) => (
   <div className="session-card">
     <img src={getImagePath(request.profile_pic_url)} alt={request.full_name} className='match-image-mini' />
@@ -63,89 +57,6 @@ const PendingRequestCard = ({ request, onRespond }) => (
   </div>
 );
 
-// --- *** NEW: Heavily Updated UpcomingSessionCard *** ---
-const UpcomingSessionCard = ({ session, onLinkSaved }) => {
-  const [linkInput, setLinkInput] = useState('');
-  const [isSaving, setIsSaving] = useState(false);
-  
-  const formatDate = (datetime) => {
-    try {
-      const date = new Date(datetime);
-      return date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
-    } catch (e) { return datetime; }
-  };
-
-  const handleSaveLink = async () => {
-    if (!linkInput.includes('meet.google.com/')) {
-      alert('Please paste a valid Google Meet link.');
-      return;
-    }
-    setIsSaving(true);
-    try {
-      const res = await fetch('/api/sessions/update_link.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          buddy_user_id: session.buddy_user_id,
-          meet_link: linkInput
-        })
-      });
-      const data = await res.json();
-      if (data.success) {
-        onLinkSaved(); // This will refresh the dashboard
-      } else {
-        alert("Error: " + data.message);
-      }
-    } catch (err) {
-      alert('A network error occurred.');
-    }
-    setIsSaving(false);
-  };
-
-  return (
-    <div className="session-card">
-      <img src={getImagePath(session.buddy_profile_pic)} alt={session.buddy_full_name} className='match-image-mini' />
-      
-      <div className="session-info">
-        <div className="session-text">
-          <strong>{session.session_topic}</strong>
-          <span>with {session.buddy_full_name}</span>
-          <span className="session-time">{formatDate(session.session_datetime)}</span>
-        </div>
-      </div>
-      
-      <div className="session-actions-vertical">
-        {session.google_meet_link ? (
-          // State 1: Link Exists
-          <a href={session.google_meet_link} target="_blank" rel="noopener noreferrer" className="meet-link-btn">
-            <FaCalendarCheck /> Join Meet
-          </a>
-        ) : (
-          // State 2: No Link Exists
-          <>
-            <a href="https://meet.google.com/new" target="_blank" rel="noopener noreferrer" className="meet-link-btn create">
-              <FaLink /> Create Meet & Copy Link
-            </a>
-            <div className="save-link-wrapper">
-              <input 
-                type="text" 
-                placeholder="Paste Google Meet link here"
-                value={linkInput}
-                onChange={(e) => setLinkInput(e.target.value)}
-              />
-              <button onClick={handleSaveLink} disabled={isSaving}>
-                <FaSave />
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
-
-
-// --- Dashboard Component (Updated) ---
 const Dashboard = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
@@ -157,13 +68,13 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   const fetchDashboardData = async () => {
-    // ... (This function is unchanged, it just fetches all data) ...
     try {
       setLoading(true);
+      // FIX: Use API_BASE_URL
       const [matchesRes, sessionsRes, profileRes] = await Promise.all([
-        fetch('/api/matches.php?limit=5'), 
-        fetch('/api/sessions.php'),      
-        fetch('/api/profile.php')        
+        fetch(`${API_BASE_URL}/matches.php?limit=5`), 
+        fetch(`${API_BASE_URL}/sessions.php`),      
+        fetch(`${API_BASE_URL}/profile.php`)        
       ]);
       const matchesData = await matchesRes.json();
       if (matchesData.success) setTopMatches(matchesData.data);
@@ -183,9 +94,8 @@ const Dashboard = () => {
   }, []);
 
   const handleRequestResponse = async (targetUserId, action) => {
-    // ... (This function is unchanged) ...
     try {
-      const res = await fetch('/api/matches/interact.php', {
+      const res = await fetch(`${API_BASE_URL}/matches/interact.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ target_user_id: targetUserId, action: action })
@@ -229,7 +139,6 @@ const Dashboard = () => {
           <h3><FaCalendarCheck /> Upcoming Sessions</h3>
           <div className='session-list'>
             {sessionData.planned_sessions.map(sess => (
-              // Pass the refresh function down
               <UpcomingSessionCard 
                 key={sess.buddy_user_id} 
                 session={sess} 
@@ -241,7 +150,6 @@ const Dashboard = () => {
       )}
 
       <div className="dashboard-section">
-        {/* ... (Top Matches section is unchanged) ... */}
         <div className="dashboard-section-header">
           <h3>Top New Matches for You</h3>
           <Link to="/matchcard" className="view-all-link">View All &rarr;</Link>

@@ -1,17 +1,32 @@
 <?php
+// --- CORS HEADERS (Crucial for Vercel) ---
+header("Access-Control-Allow-Origin: *"); // In production, replace * with your Vercel URL
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+// Handle Preflight Request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
+
 // --- CONFIGURATION ---
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root'); // Default XAMPP user
-define('DB_PASS', '');     // Default XAMPP password
-define('DB_NAME', 'edubuddy');
+// Use environment variables if available, otherwise fallback to local/hardcoded
+define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
+define('DB_USER', getenv('DB_USER') ?: 'root'); 
+define('DB_PASS', getenv('DB_PASS') ?: '');     
+define('DB_NAME', getenv('DB_NAME') ?: 'edubuddy');
 
 // --- APP ---
 header('Content-Type: application/json');
-ini_set('display_errors', 1); // Show errors for debugging
+ini_set('display_errors', 0); // Hide errors from output in production
+ini_set('log_errors', 1);     // Log them to file instead
 error_reporting(E_ALL);
 
 // Start session to track logged-in users
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 class Database {
     private $host = DB_HOST;
@@ -27,18 +42,18 @@ class Database {
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->conn->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
         } catch(PDOException $e) {
-            $this->send_response(false, 'Connection Error: ' . $e->getMessage());
+            // Don't show full error details to the user in production
+            error_log("Connection Error: " . $e->getMessage());
+            $this->send_response(false, 'Database Connection Failed.');
         }
         return $this->conn;
     }
     
-    // Helper function to send a JSON response and exit
     public function send_response($success, $message, $data = []) {
         echo json_encode(['success' => $success, 'message' => $message, 'data' => $data]);
         exit;
     }
 
-    // Helper to check if user is logged in
     public function check_login() {
         if (!isset($_SESSION['user_id'])) {
             $this->send_response(false, 'Unauthorized. Please log in.');

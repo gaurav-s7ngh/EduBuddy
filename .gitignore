@@ -4,15 +4,18 @@ logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Runtime data
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node & Build
 node_modules
 dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -22,3 +25,13 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# --- SECURITY & BACKEND ---
+# Ignore the actual config file with passwords
+api/config.php
+# Ignore uploaded files but keep the folder structure
+api/uploads/*
+!api/uploads/.gitkeep
+# Ignore environment variables
+.env
+.env.local

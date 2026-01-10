@@ -14,7 +14,6 @@ if (
 }
 
 try {
-    // Check if email already exists
     $stmt = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
     $stmt->execute([$data->email]);
     
@@ -22,25 +21,35 @@ try {
         $db->send_response(false, 'An account with this email already exists.');
     }
 
-    // Hash the password
     $password_hash = password_hash($data->password, PASSWORD_BCRYPT);
 
-    // Insert new user
+    // FIX: Start Transaction
+    $conn->beginTransaction();
+
     $stmt = $conn->prepare("INSERT INTO users (full_name, email, password_hash) VALUES (?, ?, ?)");
     
     if ($stmt->execute([$data->full_name, $data->email, $password_hash])) {
         $user_id = $conn->lastInsertId();
         
-        // Create a default profile for them
         $stmt = $conn->prepare("INSERT INTO profiles (user_id, bio) VALUES (?, ?)");
-        $stmt->execute([$user_id, '']); // Empty bio to start
-        
-        $db->send_response(true, 'Registration successful. Please log in.');
+        if ($stmt->execute([$user_id, ''])) {
+            // Both succeeded
+            $conn->commit();
+            $db->send_response(true, 'Registration successful. Please log in.');
+        } else {
+            // Profile failed, rollback user
+            $conn->rollBack();
+            $db->send_response(false, 'Registration failed (Profile Error).');
+        }
     } else {
-        $db->send_response(false, 'Registration failed. Please try again.');
+        $conn->rollBack();
+        $db->send_response(false, 'Registration failed.');
     }
 
 } catch (PDOException $e) {
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
     $db->send_response(false, 'Database Error: ' . $e->getMessage());
 }
 ?>
