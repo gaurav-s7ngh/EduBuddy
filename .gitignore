@@ -35,3 +35,4 @@ api/uploads/*
 # Ignore environment variables
 .env
 .env.local
+api/db.php
