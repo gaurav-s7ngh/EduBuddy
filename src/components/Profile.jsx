@@ -3,61 +3,107 @@ import '../styles/Profile.css';
 import PersonalityQuiz from './PersonalityQuiz';
 import { 
   FaGithub, FaLinkedin, FaDiscord, FaTwitter, 
-  FaInstagram, FaWhatsapp, FaBrain 
+  FaInstagram, FaWhatsapp, FaCamera, FaSave, FaUserGraduate, FaBrain, FaClock
 } from 'react-icons/fa';
-import defaultAvatar from '/avatar.png'; // Import the default avatar
+import defaultAvatar from '/avatar.png'; 
 
-// CheckboxGrid Component (Unchanged)
+{/* REPLACE THE OLD SLIDER SECTION WITH THIS */}
+<div className="form-section">
+  <div className="section-header">
+    <FaBrain /> 
+    <h3>Personality Profile</h3>
+    <button 
+      type="button" 
+      className="quiz-retake-btn" 
+      onClick={() => setShowQuiz(true)}
+    >
+      {profile.openness ? 'Retake Analysis' : 'Start Analysis'}
+    </button>
+  </div>
+  
+  <p className="section-subtitle">
+    Based on the IPIP-20 Scientific Assessment. These scores are calculated automatically.
+  </p>
+
+  <div className="traits-display-grid">
+    {/* Reusable Read-Only Bar Component */}
+    {[
+      { label: 'Openness', val: profile.openness, desc: 'Creativity & Curiosity' },
+      { label: 'Conscientiousness', val: profile.conscientiousness, desc: 'Discipline & Order' },
+      { label: 'Extraversion', val: profile.extraversion, desc: 'Social Energy' },
+      { label: 'Agreeableness', val: profile.agreeableness, desc: 'Cooperation' },
+      { label: 'Neuroticism', val: profile.neuroticism, desc: 'Sensitivity' }
+    ].map((trait) => (
+      <div key={trait.label} className="trait-bar-container">
+        <div className="trait-info">
+          <span className="trait-label">{trait.label}</span>
+          <span className="trait-score">{trait.val}%</span>
+        </div>
+        <div className="trait-progress-track">
+          <div 
+            className="trait-progress-fill" 
+            style={{ 
+              width: `${trait.val}%`,
+              backgroundColor: `hsl(${trait.val * 1.2}, 70%, 50%)`
+            }} 
+          />
+        </div>
+        <span className="trait-desc">{trait.desc}</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+// CheckboxGrid Component
 const CheckboxGrid = ({ title, prefix, items, selectedItems, onChange }) => (
-  <div className="form-group">
-    <label className="form-section-title">{title}</label>
+  <div className="form-group-card">
+    <label className="section-title">{title}</label>
     <div className="tag-grid">
       {items.map(item => {
         const id = (prefix === 'subject') ? item.subject_id : item.hobby_id;
         const name = (prefix === 'subject') ? item.subject_name : item.hobby_name;
         const isChecked = selectedItems.some(s => (prefix === 'subject' && s.subject_id === id) || (prefix === 'hobby' && s.hobby_id === id));
         return (
-          <div key={`${prefix}-${id}`} className="tag-checkbox">
-            <input type="checkbox" id={`${prefix}-${id}`} checked={isChecked} onChange={(e) => onChange(e, item)} />
-            <label htmlFor={`${prefix}-${id}`}>{name}</label>
-          </div>
+          <label key={`${prefix}-${id}`} className={`tag-checkbox ${isChecked ? 'active' : ''}`}>
+            <input type="checkbox" checked={isChecked} onChange={(e) => onChange(e, item)} />
+            {name}
+          </label>
         );
       })}
     </div>
   </div>
 );
 
-// RadioGroup Component (Unchanged)
+// RadioGroup Component
 const RadioGroup = ({ title, name, options, selectedValue, onChange }) => (
-  <div className="form-group">
-    <label className="form-section-title">{title}</label>
-    <div className="tag-grid">
+  <div className="form-group-card">
+    <label className="section-title">{title}</label>
+    <div className="radio-grid">
       {options.map(opt => (
-        <div key={opt.value} className="tag-checkbox">
-          <input type="radio" id={`${name}-${opt.value}`} name={name} value={opt.value} checked={selectedValue === opt.value} onChange={onChange} />
-          <label htmlFor={`${name}-${opt.value}`}>{opt.label}</label>
-        </div>
+        <label key={opt.value} className={`radio-card ${selectedValue === opt.value ? 'active' : ''}`}>
+          <input type="radio" name={name} value={opt.value} checked={selectedValue === opt.value} onChange={onChange} />
+          <span className="radio-label">{opt.label}</span>
+        </label>
       ))}
     </div>
   </div>
 );
 
-// Main Profile Component
 const Profile = () => {
+  // ... (State initialization remains exactly the same as your code) ...
   const [profile, setProfile] = useState({
     full_name: "", college: "", bio: "", preferred_study_time: "00:00:00",
     goal: "", focus_time: "flexible", session_length: "flexible",
-    personality_type: "", personality_title: "", 
+    openness: 50, conscientiousness: 50, extraversion: 50, agreeableness: 50, neuroticism: 50,
     course: "", year_of_passing: "", 
     whatsapp: "", instagram: "", discord: "", github: "", linkedin: "", twitter: "",
     subjects: [], hobbies: [],
-    profile_pic_url: defaultAvatar // --- NEW: Add profile pic to state
+    profile_pic_url: defaultAvatar 
   });
   
-  // --- NEW: State for file upload ---
   const [profilePictureFile, setProfilePictureFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(defaultAvatar);
-  const fileInputRef = useRef(null); // To trigger file input
+  const fileInputRef = useRef(null);
 
   const [allSubjects, setAllSubjects] = useState([]); 
   const [allHobbies, setAllHobbies] = useState([]);
@@ -66,17 +112,15 @@ const Profile = () => {
   const [messageType, setMessageType] = useState("");
   const [showQuiz, setShowQuiz] = useState(false);
 
-  // --- UPDATED: fetchProfile ---
+  // ... (Keep your useEffect and fetch logic exactly as it is) ...
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const res = await fetch('/api/profile.php');
         const data = await res.json();
         if (data.success) {
-          // Combine fetched data with defaults
           const fetchedProfile = { ...profile, ...data.data };
-          
-          // Set socials (which are nested)
+          // Map socials...
           fetchedProfile.whatsapp = data.data.socials?.whatsapp || "";
           fetchedProfile.instagram = data.data.socials?.instagram || "";
           fetchedProfile.discord = data.data.socials?.discord || "";
@@ -86,45 +130,35 @@ const Profile = () => {
           
           setProfile(fetchedProfile);
           
-          // --- NEW: Set image preview ---
           if (fetchedProfile.profile_pic_url) {
-            // The API path is relative, so we need to fix it for the src attribute
-            // We'll just prefix '/api/'
             setImagePreview('/api/' + fetchedProfile.profile_pic_url);
           } else {
             setImagePreview(defaultAvatar);
           }
-        } else {
-          setMessage("Error: " + data.message); setMessageType('error');
         }
-      } catch (error) {
-        setMessage("Error: Could not load profile."); setMessageType('error');
-      }
+      } catch (error) { setMessage("Error loading profile"); }
     };
-    // (The other fetch functions are the same)
+    
     const fetchAllSubjects = async () => { 
-      try {
         const res = await fetch('/api/subjects.php');
         const data = await res.json();
         if (data.success) setAllSubjects(data.data);
-      } catch (error) { console.error("Could not load subjects", error); }
     };
     const fetchAllHobbies = async () => {
-      try {
         const res = await fetch('/api/hobbies.php');
         const data = await res.json();
         if (data.success) setAllHobbies(data.data);
-      } catch (error) { console.error("Could not load hobbies", error); }
     };
+
     const loadData = async () => {
       setLoading(true);
       await Promise.all([fetchProfile(), fetchAllSubjects(), fetchAllHobbies()]);
       setLoading(false);
     };
     loadData();
-  }, []); 
+  }, []);
 
-  // --- (handleChange and checkbox handlers are UNCHANGED) ---
+  // ... (Keep your handlers: handleChange, handleSubjectChange, etc.) ...
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prev => ({ ...prev, [name]: value }));
@@ -137,196 +171,159 @@ const Profile = () => {
     const { checked } = e.target;
     setProfile(prev => ({...prev, hobbies: checked ? [...prev.hobbies, hobby] : prev.hobbies.filter(h => h.hobby_id !== hobby.hobby_id)}));
   };
-
-  // --- NEW: Handle File Selection ---
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setProfilePictureFile(file); // Store the file object
-      setImagePreview(URL.createObjectURL(file)); // Create a temporary URL for preview
+      setProfilePictureFile(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  // --- UPDATED: handleSubmit (now uses FormData) ---
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("Saving..."); setMessageType("");
+    setMessage("Saving..."); setMessageType("info");
     
-    // 1. Create FormData
     const formData = new FormData();
-    
-    // 2. Append all text fields
     for (const key in profile) {
       if (key !== 'subjects' && key !== 'hobbies' && key !== 'profile_pic_url') {
         formData.append(key, profile[key]);
       }
     }
-    
-    // 3. Append subjects and hobbies as JSON strings
     formData.append('subjects', JSON.stringify(profile.subjects));
     formData.append('hobbies', JSON.stringify(profile.hobbies));
-    
-    // 4. Append the new profile picture (if one was selected)
-    if (profilePictureFile) {
-      formData.append('profile_picture', profilePictureFile);
-    }
+    if (profilePictureFile) formData.append('profile_picture', profilePictureFile);
     
     try {
-      const res = await fetch('/api/profile.php', {
-        method: 'POST',
-        // DO NOT set 'Content-Type'. The browser will do it.
-        body: formData, 
-      });
+      const res = await fetch('/api/profile.php', { method: 'POST', body: formData });
       const result = await res.json();
       if (result.success) {
         setMessage("Profile saved successfully!"); setMessageType('success');
-        // --- NEW: Update preview URL if a new one was saved ---
         if (result.data && result.data.new_image_url) {
           setImagePreview('/api/' + result.data.new_image_url);
-          setProfilePictureFile(null); // Clear the file state
+          setProfilePictureFile(null);
         }
       } else {
-        setMessage(`Error: ${result.message || 'Could not save profile.'}`); setMessageType('error');
+        setMessage(`Error: ${result.message}`); setMessageType('error');
       }
-    } catch (error) {
-      setMessage("Error: An unexpected error occurred."); setMessageType('error');
-    }
+    } catch (error) { setMessage("Error connecting to server."); setMessageType('error'); }
   };
 
-  // --- (handleQuizComplete is UNCHANGED) ---
-  const handleQuizComplete = (quizData) => {
-    setProfile(prev => ({
-      ...prev,
-      personality_type: quizData.personality_type,
-      personality_title: quizData.personality_title
-    }));
-    setShowQuiz(false);
-    setMessage("Your personality type has been updated!");
-    setMessageType("success");
-  };
-
-  if (loading) {
-    return <div className='profile-container'><h2>Loading Profile...</h2></div>
-  }
+  if (loading) return <div className='loading-screen'>Loading...</div>;
 
   return (
-    <> 
-      {showQuiz && <PersonalityQuiz onComplete={handleQuizComplete} onClose={() => setShowQuiz(false)} />}
-      
-      <div className="profile-container">
+    <div className="profile-page-wrapper">
+      <div className="profile-container glass-panel">
+        
+        {/* Header Section */}
         <div className="profile-header">
-          
-          {/* --- NEW: Image Uploader --- */}
-          <div className="profile-pic-uploader">
-            <img 
-              src={imagePreview} 
-              alt="Profile" 
-              className="profile-pic-preview"
-              onClick={() => fileInputRef.current.click()} // Click image to upload
-            />
-            <input 
-              type="file" 
-              accept="image/*"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              style={{ display: 'none' }} // Hide the default input
-            />
-            <button 
-              type="button" 
-              className="profile-pic-btn"
-              onClick={() => fileInputRef.current.click()}
-            >
-              Change Photo
+          <div className="profile-pic-wrapper">
+            <img src={imagePreview} alt="Profile" className="profile-pic" />
+            <button type="button" className="camera-btn" onClick={() => fileInputRef.current.click()}>
+              <FaCamera />
             </button>
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" hidden />
           </div>
-          {/* --- End of Image Uploader --- */}
-          
-          <h2>Edit Your Profile</h2>
-          <p>This information will be used to find your perfect study buddies.</p>
+          <div className="header-text">
+            <h2>{profile.full_name || "Your Name"}</h2>
+            <p>{profile.college || "Your University"}</p>
+          </div>
         </div>
-        
-        {message && <p className={`profile-message ${messageType}`}>{message}</p>}
-        
+
+        {message && <div className={`alert-message ${messageType}`}>{message}</div>}
+
         <form onSubmit={handleSubmit} className="profile-form">
           
-          {/* ... (Rest of the form is identical) ... */}
-          
+          {/* 1. Academic & Bio */}
           <div className="form-section">
-            <h3 className="form-section-title">Academic Details</h3>
-            <div className="form-group"><label htmlFor="full_name">Full Name:</label><input id="full_name" type="text" name="full_name" value={profile.full_name} onChange={handleChange} required /></div>
-            <div className="form-group"><label htmlFor="college">College/University:</label><input id="college" type="text" name="college" value={profile.college} onChange={handleChange} /></div>
-            <div className="input-grid-2">
-              <div className="form-group"><label htmlFor="course">Course:</label><input id="course" type="text" name="course" value={profile.course} onChange={handleChange} placeholder="e.g., B.Tech (CSE)" /></div>
-              <div className="form-group"><label htmlFor="year_of_passing">Passing Year:</label><input id="year_of_passing" type="number" name="year_of_passing" value={profile.year_of_passing} onChange={handleChange} placeholder="e.g., 2026" /></div>
-            </div>
-          </div>
-
-          <div className="form-section">
-            <h3 className="form-section-title">Study Goals & Personality</h3>
-            <div className="form-group"><label htmlFor="bio">Bio / About Me:</label><textarea id="bio" name="bio" value={profile.bio} onChange={handleChange} placeholder="What are you studying? What are your goals?" /></div>
-            <div className="form-group"><label htmlFor="goal">My Primary Goal:</label><textarea id="goal" name="goal" value={profile.goal} onChange={handleChange} placeholder="e.g., 'Find a partner for a hackathon', 'Ace my physics exam', or 'Build a startup'" style={{minHeight: '60px'}}/></div>
-            
-            <div className="form-group">
-              <label className="form-section-title">My EduBuddy Type</label>
-              <div className="quiz-cta-card" onClick={() => setShowQuiz(true)}>
-                <FaBrain className="quiz-cta-icon" />
-                <div className="quiz-cta-text">
-                  <h4>{profile.personality_type ? `You are: ${profile.personality_title}` : "Take the Personality Quiz"}</h4>
-                  <p>{profile.personality_type ? "Click here to retake the quiz." : "Find your study type in 2 minutes to get the best matches."}</p>
+            <div className="section-header"><FaUserGraduate /> <h3>Academic Profile</h3></div>
+            <div className="input-row">
+                <div className="input-group">
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" value={profile.full_name} onChange={handleChange} required />
                 </div>
-              </div>
+                <div className="input-group">
+                    <label>College</label>
+                    <input type="text" name="college" value={profile.college} onChange={handleChange} />
+                </div>
+            </div>
+            <div className="input-row">
+                <div className="input-group">
+                    <label>Course</label>
+                    <input type="text" name="course" value={profile.course} onChange={handleChange} placeholder="e.g. B.Tech" />
+                </div>
+                <div className="input-group">
+                    <label>Passing Year</label>
+                    <input type="number" name="year_of_passing" value={profile.year_of_passing} onChange={handleChange} />
+                </div>
+            </div>
+            <div className="input-group full-width">
+                <label>Bio</label>
+                <textarea name="bio" value={profile.bio} onChange={handleChange} placeholder="Tell us about yourself..." />
+            </div>
+            <div className="input-group full-width">
+                <label>Primary Goal</label>
+                <input type="text" name="goal" value={profile.goal} onChange={handleChange} placeholder="e.g. Hackathons, Research, Study Buddy" />
             </div>
           </div>
 
+          {/* 2. Personality Sliders (The Big 5) */}
           <div className="form-section">
-            <h3 className="form-section-title">Study Preferences</h3>
+            <div className="section-header"><FaBrain /> <h3>Personality (The Big 5)</h3></div>
+            <p className="section-subtitle">Adjust sliders to find your psychological twin.</p>
+            
+            <div className="sliders-grid">
+                <PersonalitySlider label="Openness" name="openness" value={profile.openness} onChange={handleChange} description="Curiosity & Creativity" />
+                <PersonalitySlider label="Conscientiousness" name="conscientiousness" value={profile.conscientiousness} onChange={handleChange} description="Organization & Discipline" />
+                <PersonalitySlider label="Extraversion" name="extraversion" value={profile.extraversion} onChange={handleChange} description="Social Energy" />
+                <PersonalitySlider label="Agreeableness" name="agreeableness" value={profile.agreeableness} onChange={handleChange} description="Cooperation & Trust" />
+                <PersonalitySlider label="Neuroticism" name="neuroticism" value={profile.neuroticism} onChange={handleChange} description="Sensitivity to Stress" />
+            </div>
+          </div>
+
+          {/* 3. Study Habits */}
+          <div className="form-section">
+            <div className="section-header"><FaClock /> <h3>Study Habits</h3></div>
             <RadioGroup
-              title="I'm a..." name="focus_time" selectedValue={profile.focus_time} onChange={handleChange}
+              title="When do you focus best?" name="focus_time" selectedValue={profile.focus_time} onChange={handleChange}
               options={[
-                { label: '☀️ Early Bird (Morning)', value: 'early_bird' },
-                { label: '😎 Day Tripper (Afternoon)', value: 'day_tripper' },
-                { label: '🌙 Night Owl (Evening/Night)', value: 'night_owl' },
-                { label: '🤸‍♂️ Anytime', value: 'flexible' }
+                { label: '☀️ Early Bird', value: 'early_bird' },
+                { label: '😎 Day Tripper', value: 'day_tripper' },
+                { label: '🌙 Night Owl', value: 'night_owl' },
+                { label: '🔄 Flexible', value: 'flexible' }
               ]}
             />
-            <RadioGroup
-              title="I prefer..." name="session_length" selectedValue={profile.session_length} onChange={handleChange}
+             <RadioGroup
+              title="Session Style" name="session_length" selectedValue={profile.session_length} onChange={handleChange}
               options={[
-                { label: '⏱️ Pomodoros (25m)', value: 'pomodoro' },
-                { label: '📚 Study Blocks (1-2hr)', value: 'medium' },
-                { label: '🏋️‍♂️ Marathon (2hr+)', value: 'marathon' },
-                { label: '🤸‍♂️ Flexible', value: 'flexible' }
+                { label: '⏱️ Pomodoro (25m)', value: 'pomodoro' },
+                { label: '📚 Medium (1h)', value: 'medium' },
+                { label: '🏋️ Marathon (2h+)', value: 'marathon' },
+                { label: '🔄 Flexible', value: 'flexible' }
               ]}
             />
-            <div className="form-group" style={{marginTop: '1.5rem'}}>
-              <label htmlFor="study_time">My usual study time starts around:</label>
-              <input id="study_time" type="time" name="preferred_study_time" value={profile.preferred_study_time} onChange={handleChange} />
-            </div>
           </div>
 
+          {/* 4. Interests */}
           <div className="form-section">
-            <CheckboxGrid title="My Study Subjects" prefix="subject" items={allSubjects} selectedItems={profile.subjects} onChange={handleSubjectChange} />
-          </div>
-          <div className="form-section">
-            <CheckboxGrid title="My Hobbies & Interests" prefix="hobby" items={allHobbies} selectedItems={profile.hobbies} onChange={handleHobbyChange} />
-          </div>
-
-          <div className="form-section">
-            <h3 className="form-section-title">Social Links</h3>
-            <div className="social-input-group">
-              <div className="social-input"><FaGithub className="social-icon" /><input type="text" name="github" value={profile.github} onChange={handleChange} placeholder="GitHub Username" /></div>
-              <div className="social-input"><FaLinkedin className="social-icon" /><input type="text" name="linkedin" value={profile.linkedin} onChange={handleChange} placeholder="LinkedIn Profile URL" /></div>
-              <div className="social-input"><FaDiscord className="social-icon" /><input type="text" name="discord" value={profile.discord} onChange={handleChange} placeholder="Discord Username#1234" /></div>
-              <div className="social-input"><FaTwitter className="social-icon" /><input type="text" name="twitter" value={profile.twitter} onChange={handleChange} placeholder="Twitter @handle" /></div>
-              <div className="social-input"><FaInstagram className="social-icon" /><input type="text" name="instagram" value={profile.instagram} onChange={handleChange} placeholder="Instagram Username" /></div>
-              <div className="social-input"><FaWhatsapp className="social-icon" /><input type="text" name="whatsapp" value={profile.whatsapp} onChange={handleChange} placeholder="Whatsapp +91..." /></div>
-            </div>
+            <CheckboxGrid title="Subjects" prefix="subject" items={allSubjects} selectedItems={profile.subjects} onChange={handleSubjectChange} />
+            <CheckboxGrid title="Hobbies" prefix="hobby" items={allHobbies} selectedItems={profile.hobbies} onChange={handleHobbyChange} />
           </div>
 
-          <button type='submit'>Save Profile</button>
+          {/* 5. Socials */}
+          <div className="form-section">
+             <div className="section-header"><h3>Social Links</h3></div>
+             <div className="socials-grid">
+                <div className="social-item"><FaGithub/><input name="github" value={profile.github} onChange={handleChange} placeholder="GitHub User" /></div>
+                <div className="social-item"><FaLinkedin/><input name="linkedin" value={profile.linkedin} onChange={handleChange} placeholder="LinkedIn URL" /></div>
+                <div className="social-item"><FaTwitter/><input name="twitter" value={profile.twitter} onChange={handleChange} placeholder="Twitter Handle" /></div>
+                <div className="social-item"><FaInstagram/><input name="instagram" value={profile.instagram} onChange={handleChange} placeholder="Instagram" /></div>
+             </div>
+          </div>
+
+          <button type='submit' className="save-btn"><FaSave /> Save Profile</button>
         </form>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -1,302 +1,302 @@
-.profile-container {
-  max-width: 700px;
-  margin: 48px auto;
-  padding: 32px 28px 24px 28px;
-  background: var(--bg-primary);
-  border-radius: 16px;
-  box-shadow: var(--shadow);
+/* Glassmorphism Variables */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.95);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.3);
+  --primary-color: #646cff;
+  --secondary-color: #535bf2;
+  --text-dark: #333;
+  --text-light: #666;
+  --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
+
+.profile-page-wrapper {
+  padding: 2rem;
+  background: var(--bg-gradient);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  border: var(--glass-border);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+  padding: 3rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+/* Header & Avatar */
 .profile-header {
-  text-align: center;
-  margin-bottom: 2.5rem;
-}
-.profile-header h2 {
-  font-size: 2.25rem;
-  font-weight: 800;
-  background: linear-gradient(45deg, #059669, #10b981);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.profile-header p {
-  font-size: 1.1rem;
-  color: var(--text-tertiary);
-  margin-top: 0.5rem;
-}
-.profile-form {
   display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 2rem;
 }
-.form-section {
-  border-top: 1px solid var(--border-color);
-  padding-top: 2rem;
-}
-.form-section-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1.5rem;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 1rem;
-}
-.profile-form label {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-.profile-form input[type="text"],
-.profile-form input[type="time"],
-.profile-form input[type="number"],
-.profile-form textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 1rem;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-  font-family: inherit;
-}
-.profile-form textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-.profile-form input[type="text"]:focus,
-.profile-form input[type="time"]:focus,
-.profile-form input[type="number"]:focus,
-.profile-form textarea:focus {
-  border-color: var(--primary-green-main);
-  background: var(--bg-primary);
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
-  outline: none;
-}
-.tag-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-.tag-checkbox input[type="checkbox"],
-.tag-grid input[type="radio"] {
-  display: none;
-}
-.tag-checkbox label,
-.tag-grid input[type="radio"] + label {
-  display: inline-block;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--bg-tertiary);
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1.5px solid transparent;
-}
-.tag-checkbox label:hover,
-.tag-grid input[type="radio"] + label:hover {
-  background: var(--border-color);
-}
-.tag-checkbox input[type="checkbox"]:checked + label,
-.tag-grid input[type="radio"]:checked + label {
-  background: var(--primary-green-light);
-  color: var(--primary-green-dark);
-  border-color: var(--primary-green-main);
-}
-.social-input-group {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-@media (min-width: 600px) {
-  .social-input-group {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-.social-input {
+
+.profile-pic-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
-}
-.social-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.25rem;
-  color: var(--text-tertiary);
-}
-.social-input input[type="text"] {
-  padding-left: 45px;
-}
-.profile-form button[type="submit"] {
-  margin-top: 1rem;
-  width: 100%;
-  padding: 14px 0;
-  border-radius: 8px;
-  border: none;
-  font-weight: 700;
-  font-size: 1.1rem;
-  background: linear-gradient(90deg, #047857, #059669);
-  color: var(--text-on-primary);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-.profile-form button[type="submit"]:hover:not([disabled]) {
-  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.3);
-  transform: translateY(-2px);
-}
-.profile-message {
-  text-align: center;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  padding: 10px;
-  border-radius: 6px;
-}
-.profile-message.success {
-  background-color: var(--primary-green-light);
-  color: var(--primary-green-dark);
-}
-.profile-message.error {
-  background-color: #fdeaea;
-  color: #e53e3e;
-}
-.personality-card {
-  background: linear-gradient(135deg, #059669, #10b981);
-  color: var(--text-on-primary);
-  padding: 1.25rem;
-  border-radius: 12px;
-  margin-top: 1rem;
-}
-.personality-card h4 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 0.5rem 0;
-}
-.personality-card p {
-  font-size: 1rem;
-  opacity: 0.9;
-  margin: 0 0 1.5rem 0;
-  line-height: 1.6;
-}
-.trait-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.3);
-  padding-top: 1rem;
-}
-.trait-item {
-  background: rgba(255, 255, 255, 0.15);
-  padding: 0.5rem 1rem;
-  border-radius: 9999px;
-  font-size: 0.9rem;
-}
-.trait-item strong {
-  font-weight: 700;
-}
-.trait-item span {
-  opacity: 0.8;
-}
-.quiz-cta-card {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  background: linear-gradient(135deg, var(--bg-primary), var(--primary-green-light));
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-top: 1rem;
-  border: 1.5px solid var(--primary-green-main);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.quiz-cta-card:hover {
-  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.15);
-  transform: translateY(-2px);
-}
-.quiz-cta-icon {
-  font-size: 2.5rem;
-  color: var(--primary-green-main);
-  flex-shrink: 0;
-}
-.quiz-cta-text h4 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--primary-green-dark);
-  margin: 0 0 0.25rem 0;
-}
-.quiz-cta-text p {
-  font-size: 0.95rem;
-  color: var(--primary-green-dark);
-  margin: 0;
-}
-.input-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-@media (min-width: 600px) {
-  .input-grid-2 {
-    grid-template-columns: 2fr 1fr;
-  }
-}
-
-/* Fix for Dark Mode Pill Text */
-[data-theme="dark"] .tag-checkbox input[type="checkbox"]:checked + label,
-[data-theme="dark"] .tag-grid input[type="radio"]:checked + label {
-  
-  /* Use the main dark mode green as the background */
-  
-  
-  color:Or var(--text-on-primary) 
-  
-  
-}
-
-/* --- ADD THIS TO THE BOTTOM of src/styles/Profile.css --- */
-
-.profile-pic-uploader {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.profile-pic-preview {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid var(--border-color);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.profile-pic-preview:hover {
-  border-color: var(--primary-green-main);
-  opacity: 0.8;
 }
 
-.profile-pic-btn {
+.profile-pic {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.camera-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.camera-btn:hover { transform: scale(1.1); }
+
+.header-text h2 { margin: 0; color: var(--text-dark); font-size: 2rem; }
+.header-text p { margin: 0.5rem 0 0; color: var(--text-light); }
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 2.5rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+  color: var(--primary-color);
+}
+.section-header h3 { margin: 0; font-size: 1.2rem; }
+
+.section-subtitle { font-size: 0.9rem; color: #888; margin-bottom: 1.5rem; }
+
+/* Inputs */
+.input-row { display: flex; gap: 1rem; margin-bottom: 1rem; }
+.input-group { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+.input-group label { font-size: 0.9rem; font-weight: 500; color: #555; }
+.input-group input, .input-group textarea {
+  padding: 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.input-group input:focus, .input-group textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+.full-width { width: 100%; margin-bottom: 1rem; }
+
+/* Personality Sliders */
+.sliders-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.slider-container { padding: 0.5rem 0; }
+.slider-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 500; }
+.slider-description { font-size: 0.8rem; color: #999; margin-top: 0.3rem; }
+
+.styled-slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #eee;
+  border-radius: 5px;
+  outline: none;
+}
+.styled-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+/* Radio Cards */
+.radio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.radio-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.radio-card input { display: none; }
+.radio-card.active {
+  background: rgba(100, 108, 255, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Tags (Checkbox) */
+.tag-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tag-checkbox {
   padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: white;
+}
+.tag-checkbox input { display: none; }
+.tag-checkbox.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* Socials */
+.socials-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.social-item {
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid #ddd; padding: 0.8rem; border-radius: 8px;
+}
+.social-item input { border: none; outline: none; width: 100%; }
+.social-item svg { font-size: 1.2rem; color: #666; }
+
+/* Save Button */
+.save-btn {
+  width: 100%;
+  padding: 1rem;
+  background: var(--primary-color);
+  color: white;
   border: none;
   border-radius: 8px;
+  font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: background 0.2s;
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
 }
-.profile-pic-btn:hover {
-  background: var(--border-color);
+.save-btn:hover { background: var(--secondary-color); }
+
+/* Alerts */
+.alert-message {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.alert-message.success { background: #d4edda; color: #155724; }
+.alert-message.error { background: #f8d7da; color: #721c24; }
+/* Add to src/styles/Profile.css */
+
+.quiz-retake-btn {
+  margin-left: auto;
+  background: var(--secondary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.2s;
+}
+.quiz-retake-btn:hover { transform: scale(1.05); }
+
+.traits-display-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.trait-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.trait-info {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.trait-progress-track {
+  width: 100%;
+  height: 10px;
+  background: #eee;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.trait-progress-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 1s ease-in-out;
+}
+
+.trait-desc {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* Quiz Modal Styles */
+.likert-scale {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 2rem;
+}
+
+.likert-btn {
+  padding: 1rem;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.likert-btn:hover { background: #f0f0f0; transform: translateX(5px); }
+.likert-btn.agree-strong { border-left: 5px solid #4caf50; }
+.likert-btn.agree { border-left: 5px solid #8bc34a; }
+.likert-btn.neutral { border-left: 5px solid #9e9e9e; }
+.likert-btn.disagree { border-left: 5px solid #ff9800; }
+.likert-btn.disagree-strong { border-left: 5px solid #f44336; }
+
+.quiz-statement {
+  font-size: 1.4rem;
+  text-align: center;
+  margin: 2rem 0;
+  color: var(--text-dark);
 }
