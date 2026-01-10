@@ -3,8 +3,10 @@ import '../styles/Dashboard.css';
 import '../styles/Matchcard.css'; 
 import avatar from '/avatar.png';
 // --- NEW: Import definitions and your profile hook ---
+
 import { TITLE_DEFINITIONS, TRAIT_DEFINITIONS } from '../utils/personalityDefs'; 
 
+// ... (Rest of the component code you provided is fine, just use the import above)
 // --- UPDATED ComparisonCard Component ---
 const ComparisonCard = ({ match, onInteract, currentUserProfile }) => {
   const handleInteract = async (action) => {

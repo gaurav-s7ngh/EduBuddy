@@ -1,75 +1,107 @@
 <?php
+// api/quiz/save.php
 include_once '../db.php';
+
+header('Content-Type: application/json');
 
 $db = new Database();
 $conn = $db->getConnection();
 $user_id = $db->check_login();
+
+// Get JSON input
 $input = json_decode(file_get_contents("php://input"), true);
 
 if (empty($input['answers'])) {
-    $db->send_response(false, 'No answers provided.');
+    $db->send_response(false, 'No answers received.');
+    exit;
 }
 
-$answers = $input['answers']; // [ "1" => 5, "2" => 3, ... ]
-$questions = $input['questions']; // We pass definitions from frontend to ensure sync
+$answers = $input['answers']; 
+$questions = $input['questions']; 
 
-// Initialize scores
+// Initialize aggregators
 $scores = ['O' => 0, 'C' => 0, 'E' => 0, 'A' => 0, 'N' => 0];
 $counts = ['O' => 0, 'C' => 0, 'E' => 0, 'A' => 0, 'N' => 0];
 
-// Calculate Raw Scores
+// 1. Calculate Raw Scores
 foreach ($questions as $q) {
     $qid = $q['id'];
-    $trait = $q['trait'];
-    $key = $q['key'];
     
+    // FIX 1: Handle "domain" (from ipip120.js) instead of "trait"
+    $domain = isset($q['domain']) ? $q['domain'] : (isset($q['trait']) ? $q['trait'] : 'O');
+    
+    // FIX 2: Handle numeric keys (1 or -1)
+    // If key is -1, we reverse the score (1->5, 5->1)
+    $key = isset($q['key']) ? intval($q['key']) : 1;
+
     if (isset($answers[$qid])) {
         $val = intval($answers[$qid]);
         
-        // Handle Reverse Scoring
-        // Standard: 1, 2, 3, 4, 5
-        // Reverse:  5, 4, 3, 2, 1 (Formula: 6 - val)
-        if ($key === '-') {
+        // Reverse scoring logic
+        if ($key === -1) {
             $val = 6 - $val;
         }
 
-        $scores[$trait] += $val;
-        $counts[$trait]++;
+        $scores[$domain] += $val;
+        $counts[$domain]++;
     }
 }
 
-// Convert to Percentage (0-100)
-// Min score per trait (4 questions) = 4
-// Max score per trait (4 questions) = 20
-// Formula: ((Score - Min) / (Max - Min)) * 100
+// 2. Convert to Percentage (0-100)
 $final_scores = [];
-foreach ($scores as $trait => $raw_score) {
-    $min = $counts[$trait] * 1; 
-    $max = $counts[$trait] * 5;
+foreach ($scores as $domain => $raw_score) {
+    // Min possible score = count * 1
+    // Max possible score = count * 5
+    $min = $counts[$domain] * 1; 
+    $max = $counts[$domain] * 5;
     
     if ($max > $min) {
         $percent = round((($raw_score - $min) / ($max - $min)) * 100);
     } else {
-        $percent = 50; // Default if error
+        $percent = 50; 
     }
-    $final_scores[$trait] = $percent;
+    $final_scores[$domain] = $percent;
 }
 
-// Determine a "Title" based on highest trait (just for fun/display)
-$max_trait_val = max($final_scores);
-$dom_trait = array_search($max_trait_val, $final_scores);
+// 3. Generate Scientific 5-Letter Code (SLOAN notation)
+// Uppercase = High (>=50%), Lowercase = Low (<50%)
+$type_code = "";
+$type_code .= ($final_scores['O'] >= 50) ? 'O' : 'o';
+$type_code .= ($final_scores['C'] >= 50) ? 'C' : 'c';
+$type_code .= ($final_scores['E'] >= 50) ? 'E' : 'e';
+$type_code .= ($final_scores['A'] >= 50) ? 'A' : 'a';
+$type_code .= ($final_scores['N'] >= 50) ? 'N' : 'n';
+
+// 4. Map Code to "Cool Titles" (Scientific Definitions)
 $titles = [
-    'O' => 'The Visionary',
-    'C' => 'The Architect',
-    'E' => 'The Energizer',
-    'A' => 'The Peacemaker',
-    'N' => 'The Sentinel'
+    // High Openness
+    'OCEAN' => 'The Visionary',   'OCEAn' => 'The Director',
+    'OCEaN' => 'The Commander',   'OCEan' => 'The Executive',
+    'OCeAN' => 'The Perfectionist','OCeAn' => 'The Architect',
+    'OCeaN' => 'The Strategist',  'OCean' => 'The Scholar',
+    'OcEAN' => 'The Activist',    'OcEAn' => 'The Inspirer',
+    'OcEaN' => 'The Debater',     'OcEan' => 'The Entrepreneur',
+    'OceAN' => 'The Poet',        'OceAn' => 'The Dreamer',
+    'OceaN' => 'The Individualist','Ocean' => 'The Thinker',
+
+    // Low Openness
+    'oCEAN' => 'The Host',        'oCEAn' => 'The Supervisor',
+    'oCEaN' => 'The Enforcer',    'oCEan' => 'The Manager',
+    'oCeAN' => 'The Defender',    'oCeAn' => 'The Traditionalist',
+    'oCeaN' => 'The Specialist',  'oCean' => 'The Realist',
+    'ocEAN' => 'The Performer',   'ocEAn' => 'The Entertainer',
+    'ocEaN' => 'The Competitor',  'ocEan' => 'The Mechanic',
+    'oceAN' => 'The Supporter',   'oceAn' => 'The Peacekeeper',
+    'oceaN' => 'The Skeptic',     'ocean' => 'The Observer'
 ];
-$personality_title = $titles[$dom_trait] . " (" . $dom_trait . ")";
 
+$personality_title = isset($titles[$type_code]) ? $titles[$type_code] : 'The Student';
 
-// Update Database
+// 5. Update Database
 try {
+    // Note: We create a fallback in case 'personality_type' column doesn't exist yet
+    // You might need to run: ALTER TABLE profiles ADD COLUMN personality_type VARCHAR(10);
+    
     $stmt = $conn->prepare("
         UPDATE profiles SET 
         openness = ?, 
@@ -77,7 +109,8 @@ try {
         extraversion = ?, 
         agreeableness = ?, 
         neuroticism = ?,
-        personality_title = ?
+        personality_title = ?,
+        personality_type = ?
         WHERE user_id = ?
     ");
 
@@ -88,6 +121,7 @@ try {
         $final_scores['A'],
         $final_scores['N'],
         $personality_title,
+        $type_code,
         $user_id
     ]);
 
@@ -97,10 +131,26 @@ try {
         'extraversion' => $final_scores['E'],
         'agreeableness' => $final_scores['A'],
         'neuroticism' => $final_scores['N'],
-        'personality_title' => $personality_title
+        'personality_title' => $personality_title,
+        'personality_type' => $type_code
     ]);
 
 } catch (PDOException $e) {
-    $db->send_response(false, 'Database Update Error: ' . $e->getMessage());
+    // Fallback: If 'personality_type' column is missing in DB, try updating without it
+    try {
+        $stmt = $conn->prepare("
+            UPDATE profiles SET 
+            openness = ?, conscientiousness = ?, extraversion = ?, agreeableness = ?, neuroticism = ?,
+            personality_title = ?
+            WHERE user_id = ?
+        ");
+        $stmt->execute([
+            $final_scores['O'], $final_scores['C'], $final_scores['E'], $final_scores['A'], $final_scores['N'],
+            $personality_title, $user_id
+        ]);
+        $db->send_response(true, 'Saved (Legacy Mode)', $final_scores);
+    } catch (Exception $ex) {
+        $db->send_response(false, 'Database Error: ' . $ex->getMessage());
+    }
 }
 ?>

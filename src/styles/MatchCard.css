@@ -180,3 +180,54 @@
   background-color: var(--primary-green-main); 
   color: var(--text-on-primary);
 }
+
+/* src/styles/MatchCard.css */
+
+/* Keep existing styles, but Append these Fixes */
+
+/* Filter Bar fixes for Dark Mode */
+.filter-bar {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}
+.filter-group label { color: var(--text-secondary); }
+.filter-group select {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* Match Card fixes */
+.match-card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+}
+
+.match-name { color: var(--text-primary); }
+.match-detail { color: var(--text-tertiary); }
+
+.match-data-point strong { color: var(--text-secondary); }
+.match-data-point { color: var(--text-tertiary); }
+
+/* Buttons */
+.match-btn.dismiss {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+.match-btn.dismiss:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+/* Common Traits Pills - High Contrast Fix */
+.common-trait-item {
+  font-size: 0.85rem;
+  font-weight: 600;
+  /* Dark Mode: Dark Green Background, White Text */
+  background-color: var(--primary-green-dark); 
+  color: #ffffff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--primary-green-main);
+}
