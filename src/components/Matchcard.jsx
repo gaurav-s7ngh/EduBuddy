@@ -283,4 +283,4 @@ const MatchCardPage = () => {
   );
 };
 
-export default MatchCardPage;
+export default Matchcard;
