@@ -2,7 +2,7 @@
 
 // CHANGE THIS to your actual InfinityFree URL when you deploy!
 // Example: const LIVE_API_URL = "http://edubuddy.epizy.com/api";
-const LIVE_API_URL = "http://edubuddy.infinityfreeapp.com/api"; 
+const LIVE_API_URL = "https://edubuddy-api-5nl6.onrender.com"; 
 
 const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 export const API_BASE_URL = isLocal ? "/api" : LIVE_API_URL;
