@@ -40,7 +40,7 @@ function App() {
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/matchcard" element={<MatchCardPage />} />
+            <Route path="/Matchcard" element={<MatchCardPage />} />
             <Route path="/session" element={<Session />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

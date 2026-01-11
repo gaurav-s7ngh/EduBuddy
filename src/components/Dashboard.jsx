@@ -172,7 +172,7 @@ const Dashboard = () => {
       <div className="dashboard-section">
         <div className="dashboard-section-header">
           <h3>Top New Matches for You</h3>
-          <Link to="/matchcard" className="view-all-link">View All &rarr;</Link>
+          <Link to="/Matchcard" className="view-all-link">View All &rarr;</Link>
         </div>
         <div className='matches-row'>
           {topMatches.length > 0 ? (
