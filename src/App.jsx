@@ -10,7 +10,7 @@ import Profile from './components/Profile';
 import Login from './components/Login';       
 import Register from './components/Register'; 
 import Session from './components/Session';
-import MatchCardPage from './components/Matchcard';
+import MatchcardPage from './components/Matchcard';
 
 // --- NEW: A loading screen component ---
 const AppLoading = () => (
@@ -40,7 +40,7 @@ function App() {
           <Routes>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/Matchcard" element={<MatchCardPage />} />
+            <Route path="/Matchcard" element={<MatchcardPage />} />
             <Route path="/session" element={<Session />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

@@ -38,7 +38,7 @@ const Sidebar = () => {
         <NavLink
           to="/Matchcard"
           className={({ isActive }) => (isActive ? "nav-link active-link" : "nav-link")}>
-          MatchCard
+          Matchcard
         </NavLink>
         <NavLink
           to="/session"

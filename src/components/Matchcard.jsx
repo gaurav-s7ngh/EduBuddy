@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import '../styles/Dashboard.css'; 
-import '../styles/MatchCard.css'; 
+import '../styles/Matchcard.css'; 
 import avatar from '/avatar.png';
 // --- NEW: Import definitions and your profile hook ---
 
@@ -117,7 +117,7 @@ const ComparisonCard = ({ match, onInteract, currentUserProfile }) => {
 
 
 // --- UPDATED Main MatchCard Page ---
-const MatchCardPage = () => {
+const MatchcardPage = () => {
   const [allMatches, setAllMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   

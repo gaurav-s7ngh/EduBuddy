@@ -52,7 +52,7 @@ const PersonalityDisplay = ({ profile }) => {
 };
 // ----------------------------------
 
-const MiniMatchCard = ({ match }) => (
+const MiniMatchcard = ({ match }) => (
   <div className='card mini-match-card'>
     <img src={getImagePath(match.profile_pic_url)} alt={match.full_name} className='match-image-mini' />
     <div className="match-info">
